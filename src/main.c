@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "inc/wifi.h"
+#include "lwipopts.h"
 
 
 int main()
