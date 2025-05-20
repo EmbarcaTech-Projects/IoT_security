@@ -38,14 +38,15 @@ pico_sdk_init()
 add_executable(mqtt_crypto_com 
         main.c
         inc/wifi.c        
+        inc/mqtt.c
 )
 
 pico_set_program_name(mqtt_crypto_com "mqtt_crypto_com")
 pico_set_program_version(mqtt_crypto_com "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(mqtt_crypto_com 0)
-pico_enable_stdio_usb(mqtt_crypto_com 0)
+pico_enable_stdio_uart(mqtt_crypto_com 1)
+pico_enable_stdio_usb(mqtt_crypto_com 1)
 
 # Add the standard library to the build
 target_link_libraries(mqtt_crypto_com
@@ -59,6 +60,8 @@ target_include_directories(mqtt_crypto_com PRIVATE
 # Add any user requested libraries
 target_link_libraries(mqtt_crypto_com 
         pico_cyw43_arch_lwip_threadsafe_background
+        pico_lwip
+        pico_lwip_mqtt
         )
 
 pico_add_extra_outputs(mqtt_crypto_com)

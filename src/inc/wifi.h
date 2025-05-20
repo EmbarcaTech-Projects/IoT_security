@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include "pico/cyw43_arch.h"
 
-#define WIFI_SSID "teste" 
-#define WIFI_PASSWORD "teste"
+#define WIFI_SSID "Boboy_2.4GHz" 
+#define WIFI_PASSWORD "13zb0276"
 
-void connect_wifi(const char *ssid, const char *password);
+int connect_wifi(const char *ssid, const char *password);
 
 #endif
