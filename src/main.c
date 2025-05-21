@@ -35,7 +35,9 @@ int main()
 
     sleep_ms(1000);
 
-    //mqtt_conn_publish("test/topic", "Hello, MQTT!", 13, 0, 0);
+    const char *message = "Hello, MQTT com auth!";
+    size_t message_len = strlen(message);
+    mqtt_conn_publish("test/topic", message, message_len, 0, 0);
 
     while (true) {
     
