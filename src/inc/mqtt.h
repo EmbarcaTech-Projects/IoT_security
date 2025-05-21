@@ -11,5 +11,5 @@
 #define MQTT_PASS NULL
 
 void mqtt_setup(const char *client_id, const char *broker_ip, const char *user, const char *pass);
-
+void mqtt_conn_publish(const char *topic, const char *message, size_t message_len, uint8_t qos, uint8_t retain);
 #endif

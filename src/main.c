@@ -17,7 +17,7 @@ int main()
     gpio_init(G_LED);
     gpio_set_dir(G_LED, GPIO_OUT);
 
-    sleep_ms(3000);
+    sleep_ms(3000); 
 
     int r = connect_wifi(WIFI_SSID, WIFI_PASSWORD);
     sleep_ms(500);
@@ -33,7 +33,11 @@ int main()
         gpio_put(R_LED, 0);
     }
 
-    
+    sleep_ms(1000);
+
+    //mqtt_conn_publish("test/topic", "Hello, MQTT!", 13, 0, 0);
+
     while (true) {
+    
     }
 }

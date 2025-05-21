@@ -1,5 +1,12 @@
 #include "wifi.h"
 
+
+/**
+ * Função para conectar ao Wi-Fi.
+ * 
+ * @param ssid O SSID da rede Wi-Fi.
+ * @param password A senha da rede Wi-Fi.
+ */
 int connect_wifi(const char *ssid, const char *password) 
 {
     if (cyw43_arch_init()) {
