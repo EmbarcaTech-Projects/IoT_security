@@ -52,15 +52,18 @@ void mqtt_setup(const char *client_id, const char *broker_ip, const char *user, 
 
 /**
  * Callback de confirmação de publicação.
- * 
+ *
  * @param arg Argumento adicional (não utilizado).
  * @param result Resultado da publicação.
  */
-static void mqtt_pub_request_callback(void *arg, err_t result) 
+static void mqtt_pub_request_callback(void *arg, err_t result)
 {
-    if (result == ERR_OK) {
+    if (result == ERR_OK)
+    {
         printf("Mensagem publicada com sucesso.\n");
-    } else {
+    }
+    else
+    {
         printf("Falha ao publicar mensagem: %d\n", result);
     }
 }
@@ -79,13 +82,39 @@ void mqtt_conn_publish(const char *topic, const char *message, size_t message_le
         topic,
         message,
         message_len,
-        qos, // QoS
+        qos,    // QoS
         retain, // Retain
         mqtt_pub_request_callback,
-        NULL
-    );
+        NULL);
 
-    if (response != ERR_OK) {
+    if (response != ERR_OK)
+    {
         printf("Erro ao publicar mensagem: %d\n", response);
     }
+}
+
+void xor_encrypt_message(const uint8_t *message, uint8_t *encrypted_message, size_t message_len, uint8_t key)
+{
+    for (size_t i = 0; i < message_len; i++)
+        encrypted_message[i] = message[i] ^ key;
+}
+
+size_t aes_encrypt_message(const uint8_t *message, uint8_t *encrypted_message, size_t message_len, const uint8_t *key)
+{
+    struct AES_ctx ctx;
+    AES_init_ctx(&ctx, key);
+
+    size_t padded_len = ((message_len + 16 - 1) / 16) * 16;
+    uint8_t buffer[padded_len];
+    memset(buffer, 0, padded_len);
+    memcpy(buffer, message, message_len);
+
+    memcpy(encrypted_message, message, message_len);
+
+    for (size_t i = 0; i < message_len; i += 16)
+    {
+        AES_ECB_encrypt(&ctx, encrypted_message + i);
+    }
+
+    return padded_len; // <- Retorna o tamanho correto para envio
 }

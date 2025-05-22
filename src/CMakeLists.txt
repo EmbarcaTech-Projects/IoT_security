@@ -39,6 +39,7 @@ add_executable(mqtt_crypto_com
         main.c
         inc/wifi.c        
         inc/mqtt.c
+        inc/aes.c
 )
 
 pico_set_program_name(mqtt_crypto_com "mqtt_crypto_com")

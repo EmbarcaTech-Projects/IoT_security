@@ -35,9 +35,16 @@ int main()
 
     sleep_ms(1000);
 
-    const char *message = "Hello, MQTT com auth!";
-    size_t message_len = strlen(message);
-    mqtt_conn_publish("test/topic", message, message_len, 0, 0);
+    const char *message = "Hello, MQTT com criptografia xor!";
+    
+    uint8_t enc_message[256];
+    xor_encrypt_message((uint8_t *)message, enc_message, strlen(message), 42);
+    mqtt_conn_publish("test/topic/xor", enc_message, strlen(enc_message), 0, 0);
+
+    const uint8_t key[16] = "minha_chave_1234";
+    memset(enc_message, 0, sizeof(enc_message));
+    size_t enc_len = aes_encrypt_message((uint8_t *)message, enc_message, strlen(message), key);
+    mqtt_conn_publish("test/topic/aes", enc_message, enc_len, 0, 0);
 
     while (true) {
     
