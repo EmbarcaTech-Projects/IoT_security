@@ -6,6 +6,11 @@
 
 #define G_LED 11
 #define R_LED 13
+#define A 5
+#define B 6
+
+static bool last_a_state = true;
+static bool last_b_state = true;
 
 int main()
 {
@@ -16,6 +21,15 @@ int main()
     gpio_set_dir(R_LED, GPIO_OUT);
     gpio_init(G_LED);
     gpio_set_dir(G_LED, GPIO_OUT);
+
+    //Buttons
+    gpio_init(A);
+    gpio_set_dir(A, GPIO_IN);
+    gpio_pull_up(A);
+
+    gpio_init(B);
+    gpio_set_dir(B, GPIO_IN);
+    gpio_pull_up(B);
 
     sleep_ms(3000); 
 
@@ -35,18 +49,32 @@ int main()
 
     sleep_ms(1000);
 
-    const char *message = "Hello, MQTT com criptografia xor!";
-    
-    uint8_t enc_message[256];
-    xor_encrypt_message((uint8_t *)message, enc_message, strlen(message), 42);
-    mqtt_conn_publish("test/topic/xor", enc_message, strlen(enc_message), 0, 0);
-
+    const char *message = "Hello MQTT!";
     const uint8_t key[16] = "minha_chave_1234";
-    memset(enc_message, 0, sizeof(enc_message));
-    size_t enc_len = aes_encrypt_message((uint8_t *)message, enc_message, strlen(message), key);
-    mqtt_conn_publish("test/topic/aes", enc_message, enc_len, 0, 0);
 
     while (true) {
-    
+        bool cur_a = gpio_get(A);
+        bool cur_b = gpio_get(B);
+
+        if (!cur_a && last_a_state) {
+            //send message   
+            uint8_t encrypted[64];
+            uint8_t decrypted[64];
+
+            size_t len = aes_encrypt_message(message, encrypted, strlen(message), key);
+            aes_decrypt_message(encrypted, decrypted, len, key);
+
+            printf("Encriptada: %s\n", encrypted);
+            printf("Decriptada: %s\n", decrypted);
+
+            mqtt_conn_publish("test/topic/hello", encrypted, len, 0, 0);
+        }
+        else if (!cur_b && last_b_state) {
+            mqtt_conn_subscribe("test/topic", 0);
+            printf("Esperando mensagem no tópico 'test/topic'...\n");
+        }
+        last_a_state = cur_a;
+        last_b_state = cur_b;
+        sleep_ms(50);
     }
 }

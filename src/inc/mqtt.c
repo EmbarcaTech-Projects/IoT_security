@@ -15,6 +15,8 @@ static void mqtt_connection_callback(mqtt_client_t *client, void *arg, mqtt_conn
         printf("Conectado ao broker MQTT.\n");
     else
         printf("Falha ao conectar ao broker: %d\n", status);
+
+    mqtt_set_inpub_callback(client, pub_cb, data_cb, NULL);
 }
 
 /**
@@ -93,6 +95,30 @@ void mqtt_conn_publish(const char *topic, const char *message, size_t message_le
     }
 }
 
+static void pub_cb(void *arg, const char *topic, u32_t tot_len)
+{
+    printf("[MQTT] Mensagem recebida no tópico: %s\n", topic);
+}
+
+static void data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
+{
+    printf("[MQTT] Dados recebidos (%d bytes): ", len);
+    for (int i = 0; i < len; i++)
+    {
+        printf("%c", data[i]); // Processar AES/XOR
+    }
+    printf("\n");
+}
+
+void mqtt_conn_subscribe(const char *topic, uint8_t qos)
+{
+    err_t err = mqtt_subscribe(client, topic, qos, NULL, NULL);
+    if (err != ERR_OK)
+        printf("Erro ao se inscrever no tópico '%s': %d\n", topic, err);
+    else
+        printf("Inscrito no tópico '%s'.\n", topic);
+}
+
 void xor_encrypt_message(const uint8_t *message, uint8_t *encrypted_message, size_t message_len, uint8_t key)
 {
     for (size_t i = 0; i < message_len; i++)
@@ -105,16 +131,28 @@ size_t aes_encrypt_message(const uint8_t *message, uint8_t *encrypted_message, s
     AES_init_ctx(&ctx, key);
 
     size_t padded_len = ((message_len + 16 - 1) / 16) * 16;
+    
     uint8_t buffer[padded_len];
     memset(buffer, 0, padded_len);
     memcpy(buffer, message, message_len);
 
-    memcpy(encrypted_message, message, message_len);
+    memcpy(encrypted_message, buffer, padded_len);
 
     for (size_t i = 0; i < message_len; i += 16)
     {
         AES_ECB_encrypt(&ctx, encrypted_message + i);
     }
 
-    return padded_len; // <- Retorna o tamanho correto para envio
+    return padded_len; 
+}
+
+void aes_decrypt_message(const uint8_t *encrypted, uint8_t *decrypted, size_t encrypted_len, const uint8_t *key) 
+{
+    struct AES_ctx ctx;
+    AES_init_ctx(&ctx, key);
+
+    memcpy(decrypted, encrypted, encrypted_len);
+
+    for (size_t i = 0; i < encrypted_len; i += 16) 
+        AES_ECB_decrypt(&ctx, decrypted + i);
 }
